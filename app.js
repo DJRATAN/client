@@ -37,7 +37,17 @@ const swaggerOptions = {
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// Swagger UI options to use CDN for better reliability on Vercel
+const swaggerUiOptions = {
+  customCssUrl: 'https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css',
+  customJs: [
+    'https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js',
+    'https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js'
+  ]
+};
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, swaggerUiOptions));
 
 app.use('/api/workouts', workoutRoutes);
 
@@ -56,8 +66,8 @@ app.get('/', (req, res) => {
   });
 });
 
-// Catch-all route for SPA and 404s
-app.get(/.*/, (req, res) => {
+// Catch-all route for SPA and 404s (excluding /api and /api-docs to prevent asset interception)
+app.get(/^(?!\/api|\/api-docs).*/, (req, res) => {
   const indexPath = path.join(__dirname, 'public', 'index.html');
   res.sendFile(indexPath, (err) => {
     if (err) {
