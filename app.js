@@ -1,16 +1,54 @@
+
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
+const workoutRoutes = require('./routes/workouts');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
-app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// 1. Database Connection Component
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Fitness Workout Tracker API',
+      version: '1.0.0',
+      description: 'REST API for managing fitness workouts and exercises. Built with Express.js and MongoDB for COMP2068 Assignment 2.',
+    },
+    servers: [
+      { url: process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}` }
+    ],
+  },
+  apis: ['./routes/*.js'],
+};
+
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+app.use('/api/workouts', workoutRoutes);
+
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'Fitness Tracker API is running & Database connected',
+    timestamp: new Date().toISOString()
+  });
+});
+
 const connectDB = async () => {
   try {
     let uri = process.env.MONGODB_URI;
@@ -27,25 +65,5 @@ const connectDB = async () => {
 };
 
 connectDB();
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-// Root route
-app.get('/', (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    message: 'Fitness Tracker API is running & Database connected',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// For Vercel deployment
-if (process.env.CLIENT_URL !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-  });
-}
 
 module.exports = app;
