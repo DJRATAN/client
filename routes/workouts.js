@@ -9,9 +9,6 @@ const {
   deleteWorkout
 } = require('../controllers/workouts');
 
-router.route('/').get(getWorkouts).post(createWorkout);
-router.route('/:id').get(getWorkout).put(updateWorkout).delete(deleteWorkout);
-
 /**
  * @swagger
  * components:
@@ -77,6 +74,7 @@ router.route('/:id').get(getWorkout).put(updateWorkout).delete(deleteWorkout);
  *       200:
  *         description: List of all workouts
  */
+router.get('/', getWorkouts);
 
 /**
  * @swagger
@@ -96,6 +94,7 @@ router.route('/:id').get(getWorkout).put(updateWorkout).delete(deleteWorkout);
  *       404:
  *         description: Workout not found
  */
+router.get('/:id', getWorkout);
 
 /**
  * @swagger
@@ -113,6 +112,7 @@ router.route('/:id').get(getWorkout).put(updateWorkout).delete(deleteWorkout);
  *       201:
  *         description: Workout created
  */
+router.post('/', createWorkout);
 
 /**
  * @swagger
@@ -138,6 +138,7 @@ router.route('/:id').get(getWorkout).put(updateWorkout).delete(deleteWorkout);
  *       404:
  *         description: Workout not found
  */
+router.put('/:id', updateWorkout);
 
 /**
  * @swagger
@@ -157,5 +158,6 @@ router.route('/:id').get(getWorkout).put(updateWorkout).delete(deleteWorkout);
  *       404:
  *         description: Workout not found
  */
+router.delete('/:id', deleteWorkout);
 
 module.exports = router;

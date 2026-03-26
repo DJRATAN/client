@@ -30,7 +30,7 @@ const swaggerOptions = {
       description: 'REST API for managing fitness workouts and exercises. Built with Express.js and MongoDB for COMP2068 Assignment 2.',
     },
     servers: [
-      { url: process.env.CLIENT_URL || `http://localhost:${PORT}` }
+      { url: process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}` }
     ],
   },
   apis: ['./routes/*.js'],
@@ -54,17 +54,14 @@ const connectDB = async () => {
     console.log('✅ Connected to MongoDB Atlas');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
-  }
-};
-
-connectDB();
-
-// For Vercel deployment and local development
-if (process.env.NODE_ENV !== 'production') {
+  } finally {
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📚 Swagger docs at http://localhost:${PORT}/api-docs`);
     });
-}
+  }
+};
+
+connectDB();
 
 module.exports = app;
