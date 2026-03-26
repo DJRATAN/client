@@ -1,30 +1,44 @@
 require('dotenv').config();
 require('express-async-errors');
-const path = require('path');
+
 const express = require('express');
 const app = express();
 
-// Security & Middleware
+// Extra security/utility packages
 const helmet = require('helmet');
 const cors = require('cors');
 const xss = require('xss-clean');
+const rateLimiter = require('express-rate-limit');
+
+// Swagger UI
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
+const swaggerDocument = YAML.load('./swagger.yaml');
 
-// Database & Routes
-const connectDB = require('./db/connect');
+// Import your DB connection and Routes
+const connectDB = require('./db/connect'); // Assuming you have a db folder
 const workoutRouter = require('./routes/workouts');
 
-// Swagger Setup - Use process.cwd() for Vercel compatibility
-const swaggerPath = path.join(process.cwd(), 'swagger.yaml');
-const swaggerDocument = YAML.load(swaggerPath);
+// Error handlers
+const notFoundMiddleware = require('./middleware/not-found');
+const errorHandlerMiddleware = require('./middleware/error-handler');
 
+app.set('trust proxy', 1);
+app.use(
+  rateLimiter({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+  })
+);
 app.use(express.json());
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || '*', credentials: true }));
+app.use(cors());
 app.use(xss());
 
-// Swagger UI with CDN Fix for Vercel
+// 1. STATIC ASSETS (Your public folder)
+app.use(express.static('./public'));
+
+// 2. SWAGGER SETUP (With the CDN Fix for Vercel)
 const swaggerOptions = {
   customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
   customJs: [
@@ -33,23 +47,30 @@ const swaggerOptions = {
   ]
 };
 
-// Routes
-app.get('/', (req, res) => res.send('<h1>Anti Gravity API</h1><a href="/api-docs">Docs</a>'));
+app.get('/', (req, res) => {
+  res.send('<h1>Anti Gravity API</h1><a href="/api-docs">Documentation</a>');
+});
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOptions));
-app.use('/api/workouts', workoutRouter);
+
+// 3. API ROUTES
+app.use('/api/v1/workouts', workoutRouter);
+
+// 4. ERROR MIDDLEWARE
+app.use(notFoundMiddleware);
+app.use(errorHandlerMiddleware);
 
 const port = process.env.PORT || 3000;
 
 const start = async () => {
   try {
-    // Only connect if URI exists to prevent silent crash
-    if (!process.env.MONGO_URI) {
-      throw new Error("MONGO_URI is missing from Environment Variables");
-    }
+    // Ensure your MONGO_URI is in your Vercel Environment Variables
     await connectDB(process.env.MONGO_URI);
-    app.listen(port, () => console.log(`Server listening on port ${port}...`));
+    app.listen(port, () =>
+      console.log(`Server is listening on port ${port}...`)
+    );
   } catch (error) {
-    console.error('FATAL STARTUP ERROR:', error.message);
+    console.log(error);
   }
 };
 
