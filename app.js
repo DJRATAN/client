@@ -36,10 +36,10 @@ const swaggerOptions = {
   apis: ['./routes/*.js'],
 };
 
-const swaggerDocs = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+// const swaggerDocs = swaggerJsdoc(swaggerOptions);
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-app.use('/api/workouts', workoutRoutes);
+// app.use('/api/workouts', workoutRoutes);
 
 app.get('/', (req, res) => {
   res.status(200).json({
