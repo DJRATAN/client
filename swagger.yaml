@@ -1,0 +1,138 @@
+openapi: 3.0.0
+info:
+  title: Anti Gravity API
+  description: Fitness tracking API for managing workouts and exercises
+  version: 1.0.0
+servers:
+  - url: https://client-rho-brown-94.vercel.app/
+    description: Production server
+  - url: http://localhost:3000/
+    description: Local development server
+
+components:
+  schemas:
+    Exercise:
+      type: object
+      required:
+        - name
+        - sets
+        - reps
+      properties:
+        name:
+          type: string
+          example: "Bench Press"
+        sets:
+          type: number
+          example: 3
+        reps:
+          type: number
+          example: 10
+        weight:
+          type: number
+          description: Weight in kg or lbs
+          example: 60
+        notes:
+          type: string
+          example: "Keep elbows tucked"
+    
+    Workout:
+      type: object
+      required:
+        - name
+        - duration
+        - category
+      properties:
+        name:
+          type: string
+          example: "Monday Push Day"
+        description:
+          type: string
+          example: "Chest and Triceps focus"
+        date:
+          type: string
+          format: date-time
+        duration:
+          type: number
+          description: Duration in minutes
+          example: 45
+        category:
+          type: string
+          enum: [Strength, Cardio, Flexibility, HIIT, CrossFit, Yoga, Other]
+          default: Strength
+        exercises:
+          type: array
+          items:
+            $ref: '#/components/schemas/Exercise'
+
+paths:
+  /api/workouts:
+    get:
+      summary: Get all workouts
+      tags: [Workouts]
+      responses:
+        200:
+          description: A list of workouts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workout'
+    post:
+      summary: Create a new workout
+      tags: [Workouts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workout'
+      responses:
+        201:
+          description: Workout created successfully
+
+  /api/workouts/{id}:
+    get:
+      summary: Get a single workout by ID
+      tags: [Workouts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Workout details
+        404:
+          description: Workout not found
+    put:
+      summary: Update a workout
+      tags: [Workouts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workout'
+      responses:
+        200:
+          description: Workout updated
+    delete:
+      summary: Delete a workout
+      tags: [Workouts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Workout deleted
