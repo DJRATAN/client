@@ -27,7 +27,11 @@ const connectDB = async () => {
 };
 
 connectDB();
+app.use(express.static(path.join(__dirname, 'public')));
 
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 // Root route
 app.get('/', (req, res) => {
   res.status(200).json({
@@ -38,7 +42,7 @@ app.get('/', (req, res) => {
 });
 
 // For Vercel deployment
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.CLIENT_URL !== 'production') {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
   });
