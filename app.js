@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
@@ -9,22 +10,33 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Root route to test deployment
+// 1. Database Connection Component
+const connectDB = async () => {
+  try {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+      console.warn('⚠️ MONGODB_URI is not defined in environment variables');
+      return;
+    }
+    await mongoose.connect(uri);
+    console.log('✅ Connected to MongoDB Atlas');
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error.message);
+  }
+};
+
+connectDB();
+
+// Root route
 app.get('/', (req, res) => {
   res.status(200).json({
     status: 'success',
-    message: 'Fitness Tracker API is running on Vercel',
+    message: 'Fitness Tracker API is running & Database connected',
     timestamp: new Date().toISOString()
   });
 });
 
-// Simple dummy route for workouts to prevent "module not found" if you delete files
-app.get('/api/workouts', (req, res) => {
-  res.json([{ id: 1, message: "Workout route is working" }]);
-});
-
-// For Vercel, we export the app. 
-// The "app.listen" is kept for local testing.
+// For Vercel deployment
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
