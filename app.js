@@ -1,77 +1,71 @@
 require('dotenv').config();
-require('express-async-errors');
-
 const express = require('express');
-const app = express();
-
-// Extra security/utility packages
-const helmet = require('helmet');
+const mongoose = require('mongoose');
 const cors = require('cors');
-const xss = require('xss-clean');
-const rateLimiter = require('express-rate-limit');
-
-// Swagger UI
+const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
-const swaggerDocument = YAML.load('./swagger.yaml');
 
-// Import your DB connection and Routes
-const connectDB = require('./db/connect'); // Assuming you have a db folder
-const workoutRouter = require('./routes/workouts');
+const workoutRoutes = require('./routes/workouts');
 
-// Error handlers
-const notFoundMiddleware = require('./middleware/not-found');
-const errorHandlerMiddleware = require('./middleware/error-handler');
+const app = express();
+const PORT = process.env.PORT || 3001;
 
-app.set('trust proxy', 1);
-app.use(
-  rateLimiter({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-  })
-);
-app.use(express.json());
-app.use(helmet());
+// Middleware
 app.use(cors());
-app.use(xss());
+app.use(express.json());
 
-// 1. STATIC ASSETS (Your public folder)
-app.use(express.static('./public'));
-
-// 2. SWAGGER SETUP (With the CDN Fix for Vercel)
+// --- 1. Swagger Configuration Component ---
 const swaggerOptions = {
-  customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
-  customJs: [
-    'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.js'
-  ]
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Fitness Workout Tracker API',
+      version: '1.0.0',
+      description: 'API Documentation for COMP2068 Assignment 2',
+    },
+    servers: [
+      { 
+        // This ensures Swagger works both locally and on your Vercel URL
+        url: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${PORT}` 
+      }
+    ],
+  },
+  apis: ['./routes/*.js'], // Points to your route files for documentation
 };
 
-app.get('/', (req, res) => {
-  res.send('<h1>Anti Gravity API</h1><a href="/api-docs">Documentation</a>');
-});
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+// ------------------------------------------
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOptions));
+app.use('/api/workouts', workoutRoutes);
 
-// 3. API ROUTES
-app.use('/api/v1/workouts', workoutRouter);
-
-// 4. ERROR MIDDLEWARE
-app.use(notFoundMiddleware);
-app.use(errorHandlerMiddleware);
-
-const port = process.env.PORT || 3000;
-
-const start = async () => {
+// Database Connection
+const connectDB = async () => {
   try {
-    // Ensure your MONGO_URI is in your Vercel Environment Variables
-    await connectDB(process.env.MONGO_URI);
-    app.listen(port, () =>
-      console.log(`Server is listening on port ${port}...`)
-    );
+    const uri = process.env.MONGODB_URI;
+    if (!uri) return;
+    await mongoose.connect(uri);
+    console.log('✅ Connected to MongoDB Atlas');
   } catch (error) {
-    console.log(error);
+    console.error('❌ MongoDB connection error:', error.message);
   }
 };
 
-start();
+connectDB();
+
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'API, DB, Routes, and Swagger are all LIVE',
+    timestamp: new Date().toISOString(),
+    docs: '/api-docs'
+  });
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
