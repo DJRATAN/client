@@ -30,7 +30,7 @@ const swaggerOptions = {
       description: 'REST API for managing fitness workouts and exercises. Built with Express.js and MongoDB for COMP2068 Assignment 2.',
     },
     servers: [
-      { url: process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}` }
+      { url: process.env.CLIENT_URL || `http://localhost:${PORT}` }
     ],
   },
   apis: ['./routes/*.js'],
