@@ -1,5 +1,4 @@
 
-
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -31,7 +30,7 @@ const swaggerOptions = {
       description: 'REST API for managing fitness workouts and exercises. Built with Express.js and MongoDB for COMP2068 Assignment 2.',
     },
     servers: [
-      { url: process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}` }
+      { url: process.env.CLIENT_URL ? `${process.env.CLIENT_URL.replace(':3000', `:${PORT}`)}` : `http://localhost:${PORT}` }
     ],
   },
   apis: ['./routes/*.js'],
