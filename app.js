@@ -15,8 +15,8 @@ const YAML = require('yamljs');
 const connectDB = require('./db/connect');
 const workoutRouter = require('./routes/workouts');
 
-// Swagger Setup - Use absolute path for Vercel compatibility
-const swaggerPath = path.resolve(__dirname, './swagger.yaml');
+// Swagger Setup - Use process.cwd() for Vercel compatibility
+const swaggerPath = path.join(process.cwd(), 'swagger.yaml');
 const swaggerDocument = YAML.load(swaggerPath);
 
 app.use(express.json());
@@ -42,10 +42,14 @@ const port = process.env.PORT || 3000;
 
 const start = async () => {
   try {
+    // Only connect if URI exists to prevent silent crash
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI is missing from Environment Variables");
+    }
     await connectDB(process.env.MONGO_URI);
     app.listen(port, () => console.log(`Server listening on port ${port}...`));
   } catch (error) {
-    console.error('Startup Error:', error);
+    console.error('FATAL STARTUP ERROR:', error.message);
   }
 };
 

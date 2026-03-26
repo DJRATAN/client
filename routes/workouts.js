@@ -8,6 +8,11 @@ const {
   updateWorkout,
   deleteWorkout
 } = require('../controllers/workouts');
+const express = require('express');
+const { getWorkouts, getWorkout, createWorkout, updateWorkout, deleteWorkout } = require('../controllers/workouts');
+
+router.route('/').get(getWorkouts).post(createWorkout);
+router.route('/:id').get(getWorkout).put(updateWorkout).delete(deleteWorkout);
 
 /**
  * @swagger

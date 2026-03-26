@@ -7,17 +7,8 @@
     }
   ],
   "routes": [
-    {
-      "src": "/api-docs/(.*)",
-      "dest": "app.js"
-    },
-    {
-      "src": "/api/workouts/(.*)",
-      "dest": "app.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "app.js"
-    }
+    { "src": "/api-docs/(.*)", "dest": "app.js" },
+    { "src": "/api/workouts/(.*)", "dest": "app.js" },
+    { "src": "/(.*)", "dest": "app.js" }
   ]
 }
