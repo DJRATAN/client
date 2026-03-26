@@ -3,9 +3,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-// 1. Import Workout Routes Component
-const workoutRoutes = require('./routes/workouts');
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -13,15 +10,14 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// 2. Use Workout Routes
-// This maps all requests starting with /api/workouts to your routes file
-app.use('/api/workouts', workoutRoutes);
-
-// Database Connection
+// 1. Database Connection Component
 const connectDB = async () => {
   try {
     const uri = process.env.MONGODB_URI;
-    if (!uri) return;
+    if (!uri) {
+      console.warn('⚠️ MONGODB_URI is not defined in environment variables');
+      return;
+    }
     await mongoose.connect(uri);
     console.log('✅ Connected to MongoDB Atlas');
   } catch (error) {
@@ -31,15 +27,16 @@ const connectDB = async () => {
 
 connectDB();
 
-// Root route (for health checks)
+// Root route
 app.get('/', (req, res) => {
   res.status(200).json({
     status: 'success',
-    message: 'Fitness Tracker API is running, DB connected, and Routes active',
+    message: 'Fitness Tracker API is running & Database connected',
     timestamp: new Date().toISOString()
   });
 });
 
+// For Vercel deployment
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
