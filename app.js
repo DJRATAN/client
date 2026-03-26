@@ -13,15 +13,16 @@ app.use(express.json());
 // 1. Database Connection Component
 const connectDB = async () => {
   try {
-    const uri = process.env.MONGODB_URI;
-    if (!uri) {
-      console.warn('⚠️ MONGODB_URI is not defined in environment variables');
-      return;
-    }
+    let uri = process.env.MONGODB_URI;
     await mongoose.connect(uri);
     console.log('✅ Connected to MongoDB Atlas');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
+  } finally {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📚 Swagger docs at http://localhost:${PORT}/api-docs`);
+    });
   }
 };
 
