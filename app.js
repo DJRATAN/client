@@ -43,8 +43,31 @@ app.use('/api/workouts', workoutRoutes);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Root route
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'Fitness Tracker API is running',
+    timestamp: new Date().toISOString(),
+    links: {
+      swagger: '/api-docs',
+      workouts: '/api/workouts'
+    }
+  });
+});
+
+// Catch-all route for SPA and 404s
 app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const indexPath = path.join(__dirname, 'public', 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      res.status(404).json({
+        status: 'error',
+        message: 'Resource not found',
+        path: req.path
+      });
+    }
+  });
 });
 
 const connectDB = async () => {
