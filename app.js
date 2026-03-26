@@ -54,14 +54,16 @@ const connectDB = async () => {
     console.log('✅ Connected to MongoDB Atlas');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
-  } finally {
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📚 Swagger docs at http://localhost:${PORT}/api-docs`);
-    });
   }
 };
 
 connectDB();
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📚 Swagger docs at http://localhost:${PORT}/api-docs`);
+  });
+}
 
 module.exports = app;
