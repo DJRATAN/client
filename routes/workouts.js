@@ -8,8 +8,6 @@ const {
   updateWorkout,
   deleteWorkout
 } = require('../controllers/workouts');
-const express = require('express');
-const { getWorkouts, getWorkout, createWorkout, updateWorkout, deleteWorkout } = require('../controllers/workouts');
 
 router.route('/').get(getWorkouts).post(createWorkout);
 router.route('/:id').get(getWorkout).put(updateWorkout).delete(deleteWorkout);
@@ -79,7 +77,6 @@ router.route('/:id').get(getWorkout).put(updateWorkout).delete(deleteWorkout);
  *       200:
  *         description: List of all workouts
  */
-router.get('/', getWorkouts);
 
 /**
  * @swagger
@@ -99,7 +96,6 @@ router.get('/', getWorkouts);
  *       404:
  *         description: Workout not found
  */
-router.get('/:id', getWorkout);
 
 /**
  * @swagger
@@ -117,7 +113,6 @@ router.get('/:id', getWorkout);
  *       201:
  *         description: Workout created
  */
-router.post('/', createWorkout);
 
 /**
  * @swagger
@@ -143,7 +138,6 @@ router.post('/', createWorkout);
  *       404:
  *         description: Workout not found
  */
-router.put('/:id', updateWorkout);
 
 /**
  * @swagger
@@ -163,6 +157,5 @@ router.put('/:id', updateWorkout);
  *       404:
  *         description: Workout not found
  */
-router.delete('/:id', deleteWorkout);
 
 module.exports = router;
